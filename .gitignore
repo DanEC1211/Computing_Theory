@@ -1,0 +1,8 @@
+# Ignorar el directorio node_modules
+/CPPratices/node_modules/
+
+# Ignorar los archivos de registro
+*.log
+
+# Ignorar el archivo .env que contiene las variables de entorno
+.env
