@@ -1,6 +1,6 @@
 # Ignorar el directorio node_modules
 /CPPratices/node_modules/
-
+/CPPratices/calcs/*.txt
 # Ignorar los archivos de registro
 *.log
 

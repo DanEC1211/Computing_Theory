@@ -6,7 +6,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var scriptRoutes = require('./routes/script.js'); // Asegúrate de que la ruta sea correcta
+var scriptRoutes = require('./routes/script.js');
 
 var app = express();
 
@@ -22,8 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/auto', scriptRoutes); // Reemplaza '/ruta' con la ruta que desees
-app.use('/manual', scriptRoutes); 
+app.use('/', scriptRoutes)
 
 
 // catch 404 and forward to error handler
