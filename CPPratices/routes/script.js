@@ -92,20 +92,21 @@ app.get('/download', async (req, res) => {
         return batchNumberA - batchNumberB;
     });
 
-    let allBatchesContent = [];
+    const allBatchesFilePath = path.join(__dirname, '../calcs', 'Universo.txt');
+    fs.writeFileSync(allBatchesFilePath, `Σ^(n=${n})[0,1]={ ϵ,`); // Inicia la escritura del archivo
+
     for (const file of sortedFiles) {
         const batchNumber = parseInt(file.split('_')[1]);
         if (batchNumber <= maxBatchIndex) { // Solo procesa los archivos hasta el número máximo de lotes
             const filePath = path.join(__dirname, '../calcs', file);
-            const fileContent = await readFile(filePath, 'utf8');
+            const fileContent = await fs.promises.readFile(filePath, 'utf8');
             const batchData = JSON.parse(fileContent);
-            allBatchesContent = allBatchesContent.concat(batchData.binaryStrings);
+            const trimmedBinaryStrings = batchData.binaryStrings.map(binaryString => parseInt(binaryString, 2).toString(2)); // Elimina los ceros a la izquierda
+            fs.appendFileSync(allBatchesFilePath, trimmedBinaryStrings.join(',') + ','); // Añade el contenido del lote al archivo
         }
     }
 
-    const setNotation = `Σ^(n=${n})[0,1]={ ϵ,${allBatchesContent.join(',')}}`;
-    const allBatchesFilePath = path.join(__dirname, '../calcs', 'Universo.txt');
-    await writeFile(allBatchesFilePath, setNotation);
+    fs.appendFileSync(allBatchesFilePath, '}'); // Cierra la notación de conjunto
 
     res.redirect(`/calcs/Universo.txt`);
 });

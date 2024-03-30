@@ -77,8 +77,9 @@
       event.preventDefault(); 
       const n = nInput.value; // Obtiene el valor de n del input
       const maxBatchIndex = (batchIndicator.textContent.split(' de ')[1])-1; // Usa el lote máximo del indicador de lote
+      statusIndicator.textContent = "Preparando la descarga..."; // Actualiza el indicador de estado
       window.location.href = `/download?maxBatchIndex=${maxBatchIndex}&n=${n}`;
-    });
+  });
 
     function fetchAndPlotBatch(batch) {
       statusIndicator.textContent = "Graficando..."; // Actualiza el indicador de estado
