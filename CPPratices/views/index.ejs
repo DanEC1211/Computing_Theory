@@ -9,10 +9,14 @@
     <input type="number" id="n" name="n" min="0" max="1000">
     <button type="button" id="auto">Ejecutar Automático</button>
     <button type="button" id="manual">Ejecutar Manual</button>
+    <label for="gotoPage">Ir a la página:</label>
+    <input type="number" id="gotoPage" name="gotoPage" min="0">
+    <button type="button" id="goto">Ir</button>
   </form>
   <button type="button" id="prev">Prev</button>
   <span id="batchIndicator">0 de 0</span>
   <button type="button" id="next">Next</button>
+  <span id="status">Listo</span>
   <canvas id="chart"></canvas>
   <a id="download" href="/download">Descargar archivo de texto</a>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -24,86 +28,129 @@
     const nextButton = document.getElementById('next');
     const nInput = document.getElementById('n');
     const batchIndicator = document.getElementById('batchIndicator');
+    const statusIndicator = document.getElementById('status');
     let currentBatch = 0; // Lote actual
     let totalBatches = 0; // Total de lotes
+    const gotoButton = document.getElementById('goto');
+    let gotoPageInput = document.getElementById('gotoPage');
+    const downloadLink = document.getElementById('download');
+
+    gotoButton.addEventListener('click', function() {
+      const gotoPage = parseInt(gotoPageInput.value-1);
+      if (!isNaN(gotoPage) && gotoPage >= 0 && gotoPage < totalBatches) { // Cambiamos la condición a <= totalBatches
+        console.log(currentBatch);
+        currentBatch = gotoPage ;
+        console.log(currentBatch);
+        fetchAndPlotBatch(currentBatch);
+      }
+    });
 
     autoButton.addEventListener('click', function() {
-      const n = Math.floor(Math.random() * 11); // Genera un número aleatorio entre 0 y 1000
+      const n = Math.floor(Math.random() * 21); // Genera un número aleatorio entre 0 y 1000
+      nInput.value = n; // Muestra el valor de n en el input
       currentBatch = 0;
-      calculate(n, currentBatch);
+      fetchTotalBatches(n).then(() => fetchAndPlotBatch(currentBatch)); // Solicita totalBatches y luego el lote
     });
 
     manualButton.addEventListener('click', function() {
       const n = nInput.value;
       currentBatch = 0;
-      calculate(n, currentBatch);
+      fetchTotalBatches(n).then(() => fetchAndPlotBatch(currentBatch)); // Solicita totalBatches y luego el lote
     });
+
 
     prevButton.addEventListener('click', function() {
       if (currentBatch > 0) {
         currentBatch--;
-        calculate(nInput.value, currentBatch);
+        fetchAndPlotBatch(currentBatch);
       }
     });
 
     nextButton.addEventListener('click', function() {
       if (currentBatch < totalBatches - 1) {
         currentBatch++;
-        calculate(nInput.value, currentBatch);
+        fetchAndPlotBatch(currentBatch);
       }
     });
 
-    function calculate(n, batch) {
-      fetch(`/calc?n=${n}&batch=${batch}`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ n: n }),
+    downloadLink.addEventListener('click', function(event) {
+      event.preventDefault(); 
+      const n = nInput.value; // Obtiene el valor de n del input
+      const maxBatchIndex = (batchIndicator.textContent.split(' de ')[1])-1; // Usa el lote máximo del indicador de lote
+      window.location.href = `/download?maxBatchIndex=${maxBatchIndex}&n=${n}`;
+    });
+
+    function fetchAndPlotBatch(batch) {
+      statusIndicator.textContent = "Graficando..."; // Actualiza el indicador de estado
+      fetch(`/batch/${batch}`)
+        .then(response => response.json())
+        .then(data => {
+          updateChart(data);
+          batchIndicator.textContent = `${currentBatch + 1} de ${totalBatches}`; // Actualiza el indicador de lote
+          nextButton.disabled = currentBatch >= totalBatches - 1; // Deshabilita el botón "Next" si currentBatch es igual a totalBatches - 1
+          prevButton.disabled = currentBatch === 0; // Deshabilita el botón "Prev" si currentBatch es 0
+          statusIndicator.textContent = "Listo"; // Actualiza el indicador de estado
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    function fetchTotalBatches(n) {
+      statusIndicator.textContent = "Calculando..."; // Actualiza el indicador de estado
+      return fetch('/calc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ n }),
       })
       .then(response => response.json())
       .then(data => {
-          const binaryStrings = data.binaryStrings; // Usa las cadenas binarias del lote actual
-          totalBatches = data.totalBatches; // Actualiza el total de lotes
-          batchIndicator.textContent = `${currentBatch + 1} de ${totalBatches}`; // Actualiza el indicador de lote
-          updateChart({ binaryStrings, counts: data.counts });
+        totalBatches = data.totalBatches; // Actualiza totalBatches
+        batchIndicator.textContent = `${currentBatch + 1} de ${totalBatches}`; // Actualiza el indicador de lote
+        nextButton.disabled = currentBatch >= totalBatches; // Deshabilita el botón "Next" si currentBatch es igual a totalBatches - 1
+        prevButton.disabled = currentBatch === 0; // Deshabilita el botón "Prev" si currentBatch es 0
+        statusIndicator.textContent = "Listo"; // Actualiza el indicador de estado
       })
-      .catch(error => {
-          console.error('Error:', error);
+      .catch((error) => {
+        console.error('Error:', error);
       });
-  }
-
-  function updateChart(data) {
-    const ctx = document.getElementById('chart').getContext('2d');
-    if (chart) {
-        chart.destroy(); // Destruye el gráfico anterior si existe
     }
-    // Limita las cadenas binarias a los primeros 8 dígitos
-    const binaryStrings = data.binaryStrings.map(str => str.slice(0, 8));
-    chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: binaryStrings,
-            datasets: [{
-                label: 'Número de unos',
-                data: data.counts,
-                backgroundColor: 'rgba(128, 0, 128, 0.2)', // Color de fondo morado
-                borderColor: 'rgba(128, 0, 128, 1)', // Color de borde morado
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-}
 
-// Llama a la función calculate con el valor inicial de n y el lote 0
-calculate(nInput.value, 0);
+    function updateChart(data) {
+      const ctx = document.getElementById('chart').getContext('2d');
+      if (chart) {
+          chart.destroy(); // Destruye el gráfico anterior si existe
+      }
+      // No limites las cadenas binarias a los primeros 8 dígitos
+      const binaryStrings = data.binaryStrings;
+      // Resto del código...
+
+      chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: binaryStrings,
+              datasets: [{
+                  label: 'Número de unos',
+                  data: data.counts,
+                  backgroundColor: 'rgba(128, 0, 128, 0.2)', // Color de fondo morado
+                  borderColor: 'rgba(128, 0, 128, 1)', // Color de borde morado
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              scales: {
+                  y: {
+                      beginAtZero: true
+                  }
+              }
+          }
+      });
+    }
+
+    // Comienza con el primer lote
+    fetchAndPlotBatch(0);
 
   </script>
 </body>

@@ -4,6 +4,7 @@ const path = require('path');
 const util = require('util');
 const writeFile = util.promisify(fs.writeFile);
 const app = express();
+const readFile = util.promisify(fs.readFile);
 app.use(express.json());
 
 function* generateBinaryStrings(n) {
@@ -22,7 +23,7 @@ function countOnes(binaryString) {
 
 app.post('/calc', async (req, res) => {
     const n = req.body.n;
-    const batchSize = 5000; // Tamaño del lote
+    const batchSize = 10000; // Tamaño del lote
     const binaryStrings = [];
     const counts = [];
 
@@ -43,9 +44,26 @@ app.post('/calc', async (req, res) => {
     // Escribe cualquier dato restante que no haya alcanzado el tamaño del lote
     if (binaryStrings.length > 0) {
         await writeBatchToFile(batchIndex, { n, binaryStrings, counts });
+        batchIndex++;
     }
 
-    res.json({ n, binaryStrings, counts });
+    res.json({ n, totalBatches: batchIndex }); // Devuelve el total de lotes
+});
+
+
+app.get('/batch/:index', async (req, res) => {
+    const index = req.params.index;
+    try {
+        const data = await readFile(path.join('calcs', `output_${index}.txt`), 'utf-8');
+        if (data) {
+            res.json(JSON.parse(data));
+        } else {
+            res.status(404).send('Batch file is empty.');
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).send('An error occurred while reading the batch file.');
+    }
 });
 
 async function writeBatchToFile(batchIndex, data) {
@@ -64,10 +82,44 @@ async function writeBatchToFile(batchIndex, data) {
     }
 }
 
-app.get('/download', (req, res) => {
-    const files = fs.readdirSync('calcs');
-    const lastFile = files.sort((a, b) => fs.statSync('calcs/' + b).mtime - fs.statSync('calcs/' + a).mtime)[0];
-    res.download(`../calcs/${lastFile}`); // Enviar el último archivo creado
+app.get('/download', async (req, res) => {
+    const maxBatchIndex = req.query.maxBatchIndex; // Número máximo de lotes
+    const n = req.query.n; // Obtiene n desde los parámetros de consulta
+    const files = fs.readdirSync('./calcs');
+    const sortedFiles = files.sort((a, b) => {
+        const batchNumberA = parseInt(a.split('_')[1]); // Extrae el número de lote del nombre del archivo
+        const batchNumberB = parseInt(b.split('_')[1]);
+        return batchNumberA - batchNumberB;
+    });
+
+    let allBatchesContent = [];
+    for (const file of sortedFiles) {
+        const batchNumber = parseInt(file.split('_')[1]);
+        if (batchNumber <= maxBatchIndex) { // Solo procesa los archivos hasta el número máximo de lotes
+            const filePath = path.join(__dirname, '../calcs', file);
+            const fileContent = await readFile(filePath, 'utf8');
+            const batchData = JSON.parse(fileContent);
+            allBatchesContent = allBatchesContent.concat(batchData.binaryStrings);
+        }
+    }
+
+    const setNotation = `Σ^(n=${n})[0,1]={ ϵ,${allBatchesContent.join(',')}}`;
+    const allBatchesFilePath = path.join(__dirname, '../calcs', 'Universo.txt');
+    await writeFile(allBatchesFilePath, setNotation);
+
+    res.redirect(`/calcs/Universo.txt`);
+});
+
+app.get('/calcs/Universo.txt', (req, res) => {
+    const filePath = path.join(__dirname, '../calcs', 'Universo.txt');
+    res.download(filePath, 'Universo.txt', function(err){
+        if (err) {
+            console.log(err);
+            res.status(500).send('Error al descargar el archivo.');
+        } else {
+            console.log('Archivo descargado correctamente');
+        }
+    });
 });
 
 module.exports = app;
