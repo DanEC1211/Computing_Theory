@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablero de Ajedrez</title>
+    <style>
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            width: 400px; 
+            height: 400px; 
+        }
+        .chess-board div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #999;
+            width: 100px; 
+            height: 100px; 
+        }
+        .chess-board .black {
+            background-color: #000;
+            color: #fff;
+        }
+        .chess-board .white {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .white svg {
+            stroke: #000;
+        }
+
+        .black svg {
+            stroke: #fff;
+        }
+
+        svg {
+            width: 50px;
+            height: 50px;
+        }
+
+    </style>
+</head>
+<body>
+    <button id="automatico">Automático</button>
+    <button id="manual">Manual</button>
+    <button id="descargar">Descargar Árboles de Movimientos</button>
+    <div>
+        Jugador 1: <input type="text" id="jugador1">
+        Jugador 2: <input type="text" id="jugador2">
+    </div>
+
+    <div id="movimientos">Movimientos: </div>
+    <div id="turno">Turno: </div>
+    <div class="chess-board">
+        <div class="black">
+            <svg id="Player1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#1A8FE3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown">
+                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/>
+                <path d="M5 21h14"/>
+            </svg>
+        </div>
+        <div class="white"></div>
+        <div class="black"></div>
+        <div class="white">
+            <svg id="Player2" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#FF0035" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown">
+                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/>
+                <path d="M5 21h14"/>
+            </svg>
+        </div>
+
+        <div class="white"></div>
+        <div class="black"></div>
+        <div class="white"></div>
+        <div class="black"></div>
+
+        <div class="black"></div>
+        <div class="white"></div>
+        <div class="black"></div>
+        <div class="white"></div>
+
+        <div class="white"></div>
+        <div class="black"></div>
+        <div class="white"></div>
+        <div class="black"></div>
+    </div>
+    <script>
+    </script>
+</body>
+</html>
