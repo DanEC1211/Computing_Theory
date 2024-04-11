@@ -40,8 +40,10 @@
             width: 50px;
             height: 50px;
         }
-
+        
     </style>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    
 </head>
 <body>
     <button id="automatico">Automático</button>
@@ -51,41 +53,273 @@
         Jugador 1: <input type="text" id="jugador1">
         Jugador 2: <input type="text" id="jugador2">
     </div>
+    <div id="estado">Estado: Esperando</div>
 
-    <div id="movimientos">Movimientos: </div>
-    <div id="turno">Turno: </div>
+    
     <div class="chess-board">
-        <div class="black">
-            <svg id="Player1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#1A8FE3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown">
-                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/>
-                <path d="M5 21h14"/>
-            </svg>
-        </div>
-        <div class="white"></div>
-        <div class="black"></div>
-        <div class="white">
-            <svg id="Player2" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#FF0035" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown">
-                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/>
-                <path d="M5 21h14"/>
-            </svg>
-        </div>
-
-        <div class="white"></div>
-        <div class="black"></div>
-        <div class="white"></div>
-        <div class="black"></div>
-
-        <div class="black"></div>
-        <div class="white"></div>
-        <div class="black"></div>
-        <div class="white"></div>
-
-        <div class="white"></div>
-        <div class="black"></div>
-        <div class="white"></div>
-        <div class="black"></div>
+        
+        <div class="black" id="c1"></div>
+        <div class="white" id="c2"></div>
+        <div class="black" id="c3"></div>
+        <div class="white" id="c4"></div>
+        
+        <div class="white" id="c5"></div>
+        <div class="black" id="c6"></div>
+        <div class="white" id="c7"></div>
+        <div class="black" id="c8"></div>
+        
+        <div class="black" id="c9"></div>
+        <div class="white" id="c10"></div>
+        <div class="black" id="c11"></div>
+        <div class="white" id="c12"></div>
+        
+        <div class="white" id="c13"></div>
+        <div class="black" id="c14"></div>
+        <div class="white" id="c15"></div>
+        <div class="black" id="c16"></div>
     </div>
+    <div id="cy" style="width: 600px; height: 600px;"></div>
+    <a href="/">Volver al menu</a>
     <script>
+
+        var jugador1 = document.getElementById('jugador1');
+        var jugador2 = document.getElementById('jugador2');
+
+
+// Función para validar la entrada
+function validarEntrada(event) {
+    // Si la entrada no coincide con la expresión regular, restablece el valor
+    if (!/^([BW]*)$/.test(event.target.value)) {
+        event.target.value = event.target.oldValue || '';
+    } else {
+        // Almacena la última entrada válida
+        event.target.oldValue = event.target.value;
+    }
+}
+
+// Agrega el controlador de eventos a los campos de entrada
+jugador1.addEventListener('input', validarEntrada);
+jugador2.addEventListener('input', validarEntrada);
+        
+        function agregarJugador(idDiv, jugador) {
+            var div = document.getElementById(idDiv);
+            var svgPlayer1 = '<svg id="Player1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#1A8FE3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>';
+            var svgPlayer2 = '<svg id="Player2" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#FF0035" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>';
+            div.innerHTML += jugador === 'Player1' ? svgPlayer1 : svgPlayer2;
+        }
+        
+        async function runGame(game, firstPlayer1) {
+            let currentPlayer = firstPlayer1 ? 'Player1' : 'Player2';
+            let previousMoveP1 = null;
+            let previousMoveP2 = null;
+            let posiciones = { 'Player1': 0, 'Player2': 0 };
+            document.getElementById('estado').innerText = 'Estado: Jugando';
+
+            for (let i = 1; i <= 16; i++) {
+                let cell = document.getElementById('c' + i);
+                if (cell) {
+                    cell.innerHTML = '';
+                }
+            }
+
+            for (let i = 0; i < game.length; i++) {
+                document.getElementById('estado').innerText = 'Estado: Turno del ' + currentPlayer;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                let move = game[i];
+                let cell = document.getElementById('c' + move);
+
+                if (cell) {
+                    if(currentPlayer === 'Player1') {
+                        if(previousMoveP1 !== null) {
+                            let previousCell = document.getElementById('c' + previousMoveP1);
+                            let svgPlayer1 = previousCell.querySelector('#Player1');
+                            if(svgPlayer1) previousCell.removeChild(svgPlayer1);
+                        }
+                        agregarJugador('c' + move, 'Player1');
+                        previousMoveP1 = move;
+                    } else {
+                        if(previousMoveP2 !== null) {
+                            let previousCell = document.getElementById('c' + previousMoveP2);
+                            let svgPlayer2 = previousCell.querySelector('#Player2');
+                            if(svgPlayer2) previousCell.removeChild(svgPlayer2);
+                        }
+                        agregarJugador('c' + move, 'Player2');
+                        previousMoveP2 = move;
+                    }
+                }
+
+                // Actualiza la posición del jugador actual
+                posiciones[currentPlayer] = move;
+                
+                    // Comprueba si alguno de los jugadores ha llegado a su casilla ganadora
+                if (posiciones['Player1'] === 16) {
+                    document.getElementById('estado').innerText = 'Estado: Ganador Player1';
+                    break;
+                } else if (posiciones['Player2'] === 13) {
+                    document.getElementById('estado').innerText = 'Estado: Ganador Player2';
+                    break;
+                }
+                
+                
+                currentPlayer = currentPlayer === 'Player1' ? 'Player2' : 'Player1';
+
+            }
+        }
+
+        function combinarArraysAlternando(pathPlayer1, pathPlayer2, firstPlayer1) {
+            let game = [];
+            let i = 0;
+    
+            while (i < pathPlayer1.length || i < pathPlayer2.length) {
+                if (firstPlayer1) {
+                    if (pathPlayer1[i] !== undefined) game.push(pathPlayer1[i]);
+                    if (pathPlayer2[i] !== undefined) game.push(pathPlayer2[i]);
+                } else {
+                    if (pathPlayer2[i] !== undefined) game.push(pathPlayer2[i]);
+                    if (pathPlayer1[i] !== undefined) game.push(pathPlayer1[i]);
+                }
+                i++;
+            }
+    
+            return game;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            function generarCadenaAleatoria(longitud) {
+                let cadena = '';
+                for (let i = 0; i < longitud; i++) {
+                    cadena += Math.random() < 0.5 ? 'W' : 'B';
+                }
+                return cadena;
+            }
+        
+            document.getElementById('automatico').addEventListener('click', function() {
+                document.getElementById('estado').innerText = 'Estado: Pensando';
+                
+                const tamaño = Math.floor(Math.random() *20) + 1;
+                const cadena1 = generarCadenaAleatoria(tamaño);
+                const cadena2 = generarCadenaAleatoria(tamaño);
+        
+                fetch('/go', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ StepsPlayer1: cadena1, StepsPlayer2: cadena2 }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+
+                    let game = combinarArraysAlternando(data.pathPlayer1, data.pathPlayer2, data.firstPlayer1);
+                    runGame(game, data.firstPlayer1);
+
+                });
+            });
+        
+            document.getElementById('manual').addEventListener('click', function() {
+                document.getElementById('estado').innerText = 'Estado: Pensando';
+                
+
+                const cadena1 = document.getElementById('jugador1').value;
+                const cadena2 = document.getElementById('jugador2').value;
+        
+                fetch('/go', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ StepsPlayer1: cadena1, StepsPlayer2: cadena2 }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    
+                    let game = combinarArraysAlternando(data.pathPlayer1, data.pathPlayer2, data.firstPlayer1);
+                    runGame(game, data.firstPlayer1);
+
+                });
+            });
+        });
+    </script>
+    <script>
+        var MatrizAdyacencia = [
+        [null, 'W', null, null, 'W', 'B', null, null, null, null, null, null, null, null, null, null],
+        ['B', null, 'B', null, 'W', 'B', 'W', null, null, null, null, null, null, null, null, null],
+        [null, 'W', null, 'W', null, 'B', 'W', 'B', null, null, null, null, null, null, null, null],
+        [null, null, 'B', null, null, null, 'W', 'B', null, null, null, null, null, null, null, null],
+        ['B', 'W', null, null, null, 'B', null, null, 'B', 'W', null, null, null, null, null, null],
+        ['B', 'W', 'B', null, 'W', null, 'W', null, 'B', 'W', 'B', null, null, null, null, null],
+        [null, 'W', 'B', 'W', null, 'B', null, 'B', null, 'W', 'B', 'W', null, null, null, null],
+        [null, null, 'B', 'W', null, null, 'W', null, null, null, 'B', 'W', null, null, null, null],
+        [null, null, null, null, 'W', 'B', null, null, null, 'W', null, null, 'W', 'B', null, null],
+        [null, null, null, null, 'W', 'B', 'W', null, 'B', null, 'B', null, 'W', 'B', 'W', null],
+        [null, null, null, null, null, 'B', 'W', 'B', null, 'W', null, 'W', null, 'B', 'W', 'B'],
+        [null, null, null, null, null, null, 'W', 'B', null, null, 'B', null, null, null, 'W', 'B'],
+        [null, null, null, null, null, null, null, null, 'B', 'W', null, null, null, 'B', null, null],
+        [null, null, null, null, null, null, null, null, 'B', 'W', 'B', null, 'W', null, 'W', null],
+        [null, null, null, null, null, null, null, null, null, 'W', 'B', 'W', null, 'B', null, 'B'],
+        [null, null, null, null, null, null, null, null, null, null, 'B', 'W', null, null, 'W', null]
+        ];
+    
+    function convertirAModeloCytoscape(matriz) {
+        let elementos = [];
+        // Convertir nodos
+        for (let i = 0; i < matriz.length; i++) {
+            elementos.push({ data: { id: `C${i+1}` } });
+        }
+        // Convertir aristas
+        for (let i = 0; i < matriz.length; i++) {
+            for (let j = 0; j < matriz[i].length; j++) {
+                if (matriz[i][j] !== null) {
+                    elementos.push({
+                        data: {
+                            id: `e${i}-${j}`,
+                            source: `C${i+1}`,
+                            target: `C${j+1}`,
+                            label: matriz[i][j]
+                        }
+                    });
+                }
+            }
+        }
+        return elementos;
+    }
+    
+    var cy = cytoscape({
+        container: document.getElementById('cy'), 
+    
+        elements: convertirAModeloCytoscape(MatrizAdyacencia),
+    
+        style: [ 
+            {
+                selector: 'node',
+                style: {
+                    'background-color': '#666',
+                    'label': 'data(id)'
+                }
+            },
+    
+            {
+                selector: 'edge',
+                style: {
+                    'width': 3,
+                    'line-color': '#ccc',
+                    'target-arrow-color': '#ccc',
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
+                    'label': 'data(label)',
+                    'text-rotation': 'autorotate'
+                }
+            }
+        ],
+    
+        layout: {
+            name: 'grid',
+            rows: 4
+        }
+    });
     </script>
 </body>
 </html>

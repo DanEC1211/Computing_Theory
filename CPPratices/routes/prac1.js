@@ -23,7 +23,7 @@ function countOnes(binaryString) {
 
 app.post('/calc', async (req, res) => {
     const n = req.body.n;
-    const batchSize = 10000; // Tamaño del lote
+    const batchSize = 15000; // Tamaño del lote
     const binaryStrings = [];
     const counts = [];
 

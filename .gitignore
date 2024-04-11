@@ -1,8 +1,12 @@
 # Ignorar el directorio node_modules
 /CPPratices/node_modules/
 /CPPratices/calcs/*.txt
+/CPPratices/gotrees/*.json
 # Ignorar los archivos de registro
 *.log
 
 # Ignorar el archivo .env que contiene las variables de entorno
 .env
+# Ignorar la carpeta .vscode que contiene la configuración de Visual Studio Code
+.vscode
+cspell.json
