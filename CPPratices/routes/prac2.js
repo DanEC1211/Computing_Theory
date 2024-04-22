@@ -79,7 +79,7 @@ function generarArbol(numeroDeJugador, posicion, restricciones, MatrizAdyacencia
     return ultimoLote;
 }
 
-function obtenerProfundidad(objeto) {
+/* function obtenerProfundidad(objeto) {
     let nivel = 0;
     for (let clave in objeto) {
         if (objeto.hasOwnProperty(clave)) {
@@ -90,7 +90,7 @@ function obtenerProfundidad(objeto) {
         }
     }
     return nivel + 1;
-}
+} */
 
 function obtenerRutas(objeto, ruta = [], rutas = []) {
     for (let clave in objeto) {

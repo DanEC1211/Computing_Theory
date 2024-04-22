@@ -48,7 +48,7 @@
 <body>
     <button id="automatico">Automático</button>
     <button id="manual">Manual</button>
-    <button id="descargar">Descargar Árboles de Movimientos</button>
+    <!-- <button id="descargar">Descargar Árboles de Movimientos</button> -->
     <div>
         Jugador 1: <input type="text" id="jugador1">
         Jugador 2: <input type="text" id="jugador2">
@@ -197,9 +197,14 @@ jugador2.addEventListener('input', validarEntrada);
             document.getElementById('automatico').addEventListener('click', function() {
                 document.getElementById('estado').innerText = 'Estado: Pensando';
                 
-                const tamaño = Math.floor(Math.random() *20) + 1;
+                const tamaño = Math.floor(Math.random() *12) + 1;
                 const cadena1 = generarCadenaAleatoria(tamaño);
                 const cadena2 = generarCadenaAleatoria(tamaño);
+
+                var input1 = document.getElementById('jugador1');
+                var input2 = document.getElementById('jugador2');
+                input1.value = cadena1;
+                input2.value = cadena2;
         
                 fetch('/go', {
                     method: 'POST',
