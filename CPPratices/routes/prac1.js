@@ -23,7 +23,7 @@ function countOnes(binaryString) {
 
 app.post('/calc', async (req, res) => {
     const n = req.body.n;
-    const batchSize = 15000; // Tamaño del lote
+    const batchSize = 15000; 
     const binaryStrings = [];
     const counts = [];
 
@@ -32,7 +32,7 @@ app.post('/calc', async (req, res) => {
         binaryStrings.push(binaryString);
         counts.push(countOnes(binaryString));
 
-        // Si hemos alcanzado el tamaño del lote, escribe los resultados y vacía las matrices
+        
         if (binaryStrings.length >= batchSize) {
             await writeBatchToFile(batchIndex, { n, binaryStrings, counts });
             binaryStrings.length = 0;
@@ -41,13 +41,13 @@ app.post('/calc', async (req, res) => {
         }
     }
 
-    // Escribe cualquier dato restante que no haya alcanzado el tamaño del lote
+    
     if (binaryStrings.length > 0) {
         await writeBatchToFile(batchIndex, { n, binaryStrings, counts });
         batchIndex++;
     }
 
-    res.json({ n, totalBatches: batchIndex }); // Devuelve el total de lotes
+    res.json({ n, totalBatches: batchIndex }); 
 });
 
 
@@ -83,30 +83,29 @@ async function writeBatchToFile(batchIndex, data) {
 }
 
 app.get('/download', async (req, res) => {
-    const maxBatchIndex = req.query.maxBatchIndex; // Número máximo de lotes
-    const n = req.query.n; // Obtiene n desde los parámetros de consulta
+    const maxBatchIndex = req.query.maxBatchIndex; 
+    const n = req.query.n; 
     const files = fs.readdirSync('./calcs');
     const sortedFiles = files.sort((a, b) => {
-        const batchNumberA = parseInt(a.split('_')[1]); // Extrae el número de lote del nombre del archivo
+        const batchNumberA = parseInt(a.split('_')[1]); 
         const batchNumberB = parseInt(b.split('_')[1]);
         return batchNumberA - batchNumberB;
     });
 
     const allBatchesFilePath = path.join(__dirname, '../calcs', 'Universo.txt');
-    fs.writeFileSync(allBatchesFilePath, `Σ^(n=${n})[0,1]={ ϵ,`); // Inicia la escritura del archivo
-
+    fs.writeFileSync(allBatchesFilePath, `Σ^(n=${n})[0,1]={ ϵ,`); 
     for (const file of sortedFiles) {
         const batchNumber = parseInt(file.split('_')[1]);
-        if (batchNumber <= maxBatchIndex) { // Solo procesa los archivos hasta el número máximo de lotes
+        if (batchNumber <= maxBatchIndex) { 
             const filePath = path.join(__dirname, '../calcs', file);
             const fileContent = await fs.promises.readFile(filePath, 'utf8');
             const batchData = JSON.parse(fileContent);
-            const trimmedBinaryStrings = batchData.binaryStrings.map(binaryString => parseInt(binaryString, 2).toString(2)); // Elimina los ceros a la izquierda
-            fs.appendFileSync(allBatchesFilePath, trimmedBinaryStrings.join(',') + ','); // Añade el contenido del lote al archivo
+            const trimmedBinaryStrings = batchData.binaryStrings.map(binaryString => parseInt(binaryString, 2).toString(2)); 
+            fs.appendFileSync(allBatchesFilePath, trimmedBinaryStrings.join(',') + ',');
         }
     }
 
-    fs.appendFileSync(allBatchesFilePath, '}'); // Cierra la notación de conjunto
+    fs.appendFileSync(allBatchesFilePath, '}');
 
     res.redirect(`/calcs/Universo.txt`);
 });

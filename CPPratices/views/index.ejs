@@ -4,13 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prácticas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .list-group-item {
+            border-color: #ccc;
+        }
+        .list-group-item:hover {
+            background-color: #ddd;
+        }
+        a {
+            color: #333;
+        }
+        a:hover {
+            color: #666;
+        }
+    </style>
 </head>
-<body>
-    <h1>Prácticas</h1>
-    <ul>
-        <li><a href="/practica1">Práctica 1</a></li>
-        <li><a href="/practica2">Práctica 2</a></li>
-        <li><a href="/practica3">Práctica 3</a></li>
-    </ul>
+<body class="container py-5">
+    <div class="d-flex justify-content-center"> 
+        <h1 class="mb-4 text-secondary">Prácticas</h1>
+    </div>
+    <div class="d-flex justify-content-center">
+        <ul class="list-group">
+            <li class="list-group-item"><a href="/practica1" class="btn btn-link text-secondary">Práctica 1</a></li>
+            <li class="list-group-item"><a href="/practica2" class="btn btn-link text-secondary">Práctica 2</a></li>
+            <li class="list-group-item"><a href="/practica3" class="btn btn-link text-secondary">Práctica 3</a></li>
+        </ul>
+    </div>
 </body>
 </html>

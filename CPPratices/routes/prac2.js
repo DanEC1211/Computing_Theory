@@ -38,7 +38,7 @@ function movimientosValidos(posicion, restriccion, MatrizAdyacencia) {
 }
 
 function generarArbol(numeroDeJugador, posicion, restricciones, MatrizAdyacencia) {
-    let tamanoDeLote = 8000;
+    let tamanoDeLote = 2500;
     let ultimoLote = 0;
     let loteActual = [];
     let i = 0;
@@ -70,7 +70,7 @@ function generarArbol(numeroDeJugador, posicion, restricciones, MatrizAdyacencia
     const arbol = {};
     dfs(posicion, restricciones, arbol);
 
-    // Escribir el último lote si no está vacío
+
     if (loteActual.length > 0) {
         fs.writeFileSync(path.join(__dirname, '../gotrees', `jugador${numeroDeJugador}_lote_${++i}.json`), JSON.stringify(loteActual));
         ultimoLote = i;
@@ -92,55 +92,44 @@ function generarArbol(numeroDeJugador, posicion, restricciones, MatrizAdyacencia
     return nivel + 1;
 } */
 
-function obtenerRutas(objeto, ruta = [], rutas = []) {
-    for (let clave in objeto) {
-        if (objeto.hasOwnProperty(clave)) {
-            let nuevaRuta = ruta.concat(clave);
-            if (typeof objeto[clave] === 'object' && !Array.isArray(objeto[clave]) && objeto[clave] !== null) {
-                obtenerRutas(objeto[clave], nuevaRuta, rutas);
-            }
-            rutas.push(nuevaRuta);
-        }
-    }
+function pathSelected(numeroDeJugador, numeroDeLote, tryhard = false) {
 
-    // Encuentra la longitud de la ruta más larga
-    let maxLongitud = Math.max(...rutas.map(ruta => ruta.length));
-
-    // Filtra las rutas para solo devolver las de mayor longitud
-    return rutas.filter(ruta => ruta.length === maxLongitud);
-}
-function pathSelected(numeroDeJugador, numeroDeLote, tryhard = true) {
-    // Genera el nombre del archivo
     const fileName = `jugador${numeroDeJugador}_lote_${numeroDeLote}.json`;
 
-    // Asegúrate de que el lote seleccionado exista
     if (!fs.existsSync(path.join(__dirname, '../gotrees', fileName))) {
         return [];
     }
 
     const arbol = JSON.parse(fs.readFileSync(path.join(__dirname, '../gotrees', fileName)));
     const ultimaClavePrincipal = Object.keys(arbol).sort((a, b) => b - a)[0];
-    const rutas = obtenerRutas(arbol[ultimaClavePrincipal]);
 
     let rutaSeleccionada;
-    if (tryhard) {
-        // Si el modo tryhard está activado, busca una ruta que contenga el número "13" para el jugador 1 y el "16" para el jugador 2
-        const numeroBuscado = numeroDeJugador === 1 ? '16' : '13';
-        rutaSeleccionada = rutas.find(ruta => ruta.includes(numeroBuscado));
-        if (!rutaSeleccionada) {
-            const randomIndex = Math.floor(Math.random() * rutas.length);
-            rutaSeleccionada = rutas[randomIndex];
+    const numeroBuscado = numeroDeJugador === 1 ? '16' : '13';
+
+    function buscarRutas(objeto, ruta = []) {
+        for (let clave in objeto) {
+            if (objeto.hasOwnProperty(clave)) {
+                let nuevaRuta = ruta.concat(clave);
+                if (tryhard && nuevaRuta.includes(numeroBuscado)) {
+                    rutaSeleccionada = nuevaRuta;
+                    return;
+                }
+                if (typeof objeto[clave] === 'object' && !Array.isArray(objeto[clave]) && objeto[clave] !== null) {
+                    buscarRutas(objeto[clave], nuevaRuta);
+                }
+                if (!rutaSeleccionada) {
+                    rutaSeleccionada = nuevaRuta;
+                }
+            }
         }
-    } else {
-        // Si el modo tryhard está desactivado, selecciona una ruta al azar
-        const randomIndex = Math.floor(Math.random() * rutas.length);
-        rutaSeleccionada = rutas[randomIndex];
     }
 
-    // Convierte la ruta seleccionada al formato deseado
+    buscarRutas(arbol[ultimaClavePrincipal]);
+
+
     const rutaConvertida = rutaSeleccionada.flatMap(ruta => ruta.split('-')).map(Number);
 
-    // Elimina los números duplicados consecutivos
+
     const rutaSinDuplicados = rutaConvertida.reduce((acc, num, i, arr) => {
         if (num !== arr[i - 1]) {
             acc.push(num);

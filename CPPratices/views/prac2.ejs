@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tablero de Ajedrez</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
         .chess-board {
             display: grid;
@@ -40,66 +41,141 @@
             width: 50px;
             height: 50px;
         }
+
+        canvas {
+            transform: translateX(-50%);
+        }
+
+        .bg-purple {
+            background-color: #6f42c1 !important; 
+        }
         
     </style>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          background-color: #f0f0f0;
+          color: #333;
+        }
+        form {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          margin-top: 20px;
+        }
+        button {
+          background-color: #333;
+          color: #f0f0f0;
+          border: none;
+          padding: 10px 20px;
+          margin: 10px 0;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #666;
+        }
+        #chart {
+          width: 80%;
+          height: 400px;
+          margin: 20px auto;
+        }
+        a {
+          color: #333;
+          text-decoration: none;
+          display: inline-block;
+          margin: 10px;
+        }
+        a:hover {
+          color: #666;
+        }
+        #status {
+          text-align: center;
+          margin-top: 20px;
+        }
+      </style>
     <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
     
 </head>
-<body>
-    <button id="automatico">Automático</button>
-    <button id="manual">Manual</button>
-    <!-- <button id="descargar">Descargar Árboles de Movimientos</button> -->
-    <div>
-        Jugador 1: <input type="text" id="jugador1">
-        Jugador 2: <input type="text" id="jugador2">
+<body class="bg-light text-center">
+    <div class="container py-5">
+        <h1 class="mb-4 text-secondary">Tablero de Ajedrez</h1>
+        <div class="row">
+            <div class="col">
+                <button class="btn btn-dark" id="automatico">Automático</button>
+                <button class="btn btn-dark" id="manual">Manual</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                Jugador 1: <input type="text" id="jugador1" class="form-control">
+                Jugador 2: <input type="text" id="jugador2" class="form-control">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div id="estado" class="alert alert-dark">Estado: Esperando</div>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-auto">
+                <div class="chess-board">
+                    
+                    <div class="black" id="c1"></div>
+                    <div class="white" id="c2"></div>
+                    <div class="black" id="c3"></div>
+                    <div class="white" id="c4"></div>
+                    
+                    <div class="white" id="c5"></div>
+                    <div class="black" id="c6"></div>
+                    <div class="white" id="c7"></div>
+                    <div class="black" id="c8"></div>
+                    
+                    <div class="black" id="c9"></div>
+                    <div class="white" id="c10"></div>
+                    <div class="black" id="c11"></div>
+                    <div class="white" id="c12"></div>
+                    
+                    <div class="white" id="c13"></div>
+                    <div class="black" id="c14"></div>
+                    <div class="white" id="c15"></div>
+                    <div class="black" id="c16"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-auto">
+                <div id="cy" style="width: 600px; height: 600px;"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <a href="/" class="btn btn-dark">Volver al menu</a>
+            </div>
+        </div>
     </div>
-    <div id="estado">Estado: Esperando</div>
-
-    
-    <div class="chess-board">
-        
-        <div class="black" id="c1"></div>
-        <div class="white" id="c2"></div>
-        <div class="black" id="c3"></div>
-        <div class="white" id="c4"></div>
-        
-        <div class="white" id="c5"></div>
-        <div class="black" id="c6"></div>
-        <div class="white" id="c7"></div>
-        <div class="black" id="c8"></div>
-        
-        <div class="black" id="c9"></div>
-        <div class="white" id="c10"></div>
-        <div class="black" id="c11"></div>
-        <div class="white" id="c12"></div>
-        
-        <div class="white" id="c13"></div>
-        <div class="black" id="c14"></div>
-        <div class="white" id="c15"></div>
-        <div class="black" id="c16"></div>
-    </div>
-    <div id="cy" style="width: 600px; height: 600px;"></div>
-    <a href="/">Volver al menu</a>
     <script>
 
         var jugador1 = document.getElementById('jugador1');
         var jugador2 = document.getElementById('jugador2');
 
 
-// Función para validar la entrada
-function validarEntrada(event) {
-    // Si la entrada no coincide con la expresión regular, restablece el valor
-    if (!/^([BW]*)$/.test(event.target.value)) {
-        event.target.value = event.target.oldValue || '';
-    } else {
-        // Almacena la última entrada válida
-        event.target.oldValue = event.target.value;
-    }
-}
+        
+        function validarEntrada(event) {
+            
+            if (!/^([BW]*)$/.test(event.target.value)) {
+                event.target.value = event.target.oldValue || '';
+            } else {
+                
+                event.target.oldValue = event.target.value;
+            }
+        }
 
-// Agrega el controlador de eventos a los campos de entrada
-jugador1.addEventListener('input', validarEntrada);
-jugador2.addEventListener('input', validarEntrada);
+        
+        jugador1.addEventListener('input', validarEntrada);
+        jugador2.addEventListener('input', validarEntrada);
         
         function agregarJugador(idDiv, jugador) {
             var div = document.getElementById(idDiv);
@@ -122,8 +198,27 @@ jugador2.addEventListener('input', validarEntrada);
                 }
             }
 
+            function cambiarEstiloEstado(jugador) {
+                let estado = document.getElementById('estado');
+                estado.classList.remove('bg-primary', 'bg-danger', 'bg-warning', 'bg-secondary', 'bg-purple');
+                if (jugador === 'Player1') {
+                    estado.classList.add('bg-primary');
+                    estado.style.color = 'white';
+                } else if (jugador === 'Player2') {
+                    estado.classList.add('bg-danger');
+                    estado.style.color = 'white';
+                } else if (jugador.includes('Ganador')) {
+                    estado.classList.add('bg-warning');
+                    estado.style.color = 'black';
+                } else {
+                    estado.classList.add('bg-secondary');
+                    estado.style.color = 'white';
+                }
+            }
+
             for (let i = 0; i < game.length; i++) {
                 document.getElementById('estado').innerText = 'Estado: Turno del ' + currentPlayer;
+                cambiarEstiloEstado(currentPlayer);
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
                 let move = game[i];
@@ -149,20 +244,21 @@ jugador2.addEventListener('input', validarEntrada);
                     }
                 }
 
-                // Actualiza la posición del jugador actual
+                
                 posiciones[currentPlayer] = move;
                 
-                    // Comprueba si alguno de los jugadores ha llegado a su casilla ganadora
+                
                 if (posiciones['Player1'] === 16) {
                     document.getElementById('estado').innerText = 'Estado: Ganador Player1';
+                    cambiarEstiloEstado('Ganador Player1');
                     break;
                 } else if (posiciones['Player2'] === 13) {
                     document.getElementById('estado').innerText = 'Estado: Ganador Player2';
+                    cambiarEstiloEstado('Ganador Player2');
                     break;
                 }
                 
-                
-                currentPlayer = currentPlayer === 'Player1' ? 'Player2' : 'Player1';
+                    currentPlayer = currentPlayer === 'Player1' ? 'Player2' : 'Player1';
 
             }
         }
@@ -195,9 +291,13 @@ jugador2.addEventListener('input', validarEntrada);
             }
         
             document.getElementById('automatico').addEventListener('click', function() {
-                document.getElementById('estado').innerText = 'Estado: Pensando';
+                let estado = document.getElementById('estado');
+                estado.classList.remove('bg-primary', 'bg-danger', 'bg-warning', 'bg-secondary', 'bg-purple');
+                estado.classList.add('bg-purple');
+                estado.style.color = 'white';
+                document.getElementById('estado').innerText = 'Estado: Pensando';   
                 
-                const tamaño = Math.floor(Math.random() *12) + 1;
+                const tamaño = Math.floor(Math.random() *15) + 1;
                 const cadena1 = generarCadenaAleatoria(tamaño);
                 const cadena2 = generarCadenaAleatoria(tamaño);
 
@@ -323,7 +423,15 @@ jugador2.addEventListener('input', validarEntrada);
         layout: {
             name: 'grid',
             rows: 4
-        }
+        },
+    
+        userZoomingEnabled: false,
+        userPanningEnabled: false 
+    });
+    
+    cy.ready(function() {
+        cy.center();
+        cy.resize(); 
     });
     </script>
 </body>

@@ -2,24 +2,73 @@
 <html>
 <head>
   <title>Universo de Cadenas Binarias</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+    .form-control {
+      max-width: 300px;
+    }
+    .btn {
+      background-color: #6c757d;
+      color: #f0f0f0;
+    }
+    .btn:hover {
+      background-color: #5a6268;
+    }
+    #chart {
+      width: 80%;
+      height: 400px;
+      margin: 20px auto;
+    }
+    a {
+      color: #333;
+      text-decoration: none;
+      display: inline-block;
+      margin: 10px;
+    }
+    a:hover {
+      color: #666;
+    }
+    #status {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
 </head>
-<body>
-  <form id="form">
-    <label for="n">Introduce el valor de n (0-1000):</label>
-    <input type="number" id="n" name="n" min="0" max="1000">
-    <button type="button" id="auto">Ejecutar Automático</button>
-    <button type="button" id="manual">Ejecutar Manual</button>
-    <label for="gotoPage">Ir a la página:</label>
-    <input type="number" id="gotoPage" name="gotoPage" min="0">
-    <button type="button" id="goto">Ir</button>
+<body class="container py-5">
+  <div class="d-flex justify-content-center"> 
+    <h1 class="mb-4 text-secondary">Generador de Universos</h1>
+  </div>
+  <form id="form" class="form-inline justify-content-center flex-column flex-md-row">
+    <div class="form-group mb-2">
+      <label for="n" class="mr-2">Introduce el valor de n (0-1000):</label>
+      <input type="number" class="form-control" id="n" name="n" min="0" max="1000">
+    </div>
+    <button type="button" class="btn btn-secondary mb-2 ml-md-2" id="auto">Ejecutar Automático</button>
+    <button type="button" class="btn btn-secondary mb-2 ml-md-2" id="manual">Ejecutar Manual</button>
+    <div class="form-group mb-2 ml-md-2">
+      <label for="gotoPage" class="mr-2">Ir a la página:</label>
+      <input type="number" class="form-control" id="gotoPage" name="gotoPage" min="0">
+    </div>
+    <button type="button" class="btn btn-secondary mb-2 ml-md-2" id="goto">Ir</button>
   </form>
-  <button type="button" id="prev">Prev</button>
-  <span id="batchIndicator">0 de 0</span>
-  <button type="button" id="next">Next</button>
-  <span id="status">Listo</span>
-  <canvas id="chart"></canvas>
-  <a id="download" href="/download">Descargar archivo de texto</a>
-  <a href="/">Volver al menu</a>
+  <div class="d-flex justify-content-center align-items-center my-4">
+    <button type="button" class="btn btn-secondary mr-2" id="prev">Prev</button>
+    <span id="batchIndicator">0 de 0</span>
+    <button type="button" class="btn btn-secondary ml-2" id="next">Next</button>
+  </div>
+  <span id="status" class="d-block text-center mb-4">Listo</span>
+  <canvas id="chart" class="mx-auto d-block"></canvas>
+  <div class="d-flex justify-content-center mt-4">
+    <a id="download" href="/download" class="btn btn-secondary mr-2">Descargar archivo de texto</a>
+    <a href="/" class="btn btn-secondary">Volver al menu</a>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     let chart; // Variable para almacenar el gráfico
@@ -38,7 +87,7 @@
 
     gotoButton.addEventListener('click', function() {
       const gotoPage = parseInt(gotoPageInput.value-1);
-      if (!isNaN(gotoPage) && gotoPage >= 0 && gotoPage < totalBatches) { // Cambiamos la condición a <= totalBatches
+      if (!isNaN(gotoPage) && gotoPage >= 0 && gotoPage < totalBatches) { 
         console.log(currentBatch);
         currentBatch = gotoPage ;
         console.log(currentBatch);
@@ -47,16 +96,16 @@
     });
 
     autoButton.addEventListener('click', function() {
-      const n = Math.floor(Math.random() * 21); // Genera un número aleatorio entre 0 y 1000
-      nInput.value = n; // Muestra el valor de n en el input
+      const n = Math.floor(Math.random() * 21); 
+      nInput.value = n; 
       currentBatch = 0;
-      fetchTotalBatches(n).then(() => fetchAndPlotBatch(currentBatch)); // Solicita totalBatches y luego el lote
+      fetchTotalBatches(n).then(() => fetchAndPlotBatch(currentBatch)); 
     });
 
     manualButton.addEventListener('click', function() {
       const n = nInput.value;
       currentBatch = 0;
-      fetchTotalBatches(n).then(() => fetchAndPlotBatch(currentBatch)); // Solicita totalBatches y luego el lote
+      fetchTotalBatches(n).then(() => fetchAndPlotBatch(currentBatch)); 
     });
 
 
@@ -76,22 +125,22 @@
 
     downloadLink.addEventListener('click', function(event) {
       event.preventDefault(); 
-      const n = nInput.value; // Obtiene el valor de n del input
-      const maxBatchIndex = (batchIndicator.textContent.split(' de ')[1])-1; // Usa el lote máximo del indicador de lote
-      statusIndicator.textContent = "Preparando la descarga..."; // Actualiza el indicador de estado
+      const n = nInput.value; 
+      const maxBatchIndex = (batchIndicator.textContent.split(' de ')[1])-1; 
+      statusIndicator.textContent = "Preparando la descarga..."; 
       window.location.href = `/download?maxBatchIndex=${maxBatchIndex}&n=${n}`;
   });
 
     function fetchAndPlotBatch(batch) {
-      statusIndicator.textContent = "Graficando..."; // Actualiza el indicador de estado
+      statusIndicator.textContent = "Graficando..."; 
       fetch(`/batch/${batch}`)
         .then(response => response.json())
         .then(data => {
           updateChart(data);
-          batchIndicator.textContent = `${currentBatch + 1} de ${totalBatches}`; // Actualiza el indicador de lote
-          nextButton.disabled = currentBatch >= totalBatches - 1; // Deshabilita el botón "Next" si currentBatch es igual a totalBatches - 1
-          prevButton.disabled = currentBatch === 0; // Deshabilita el botón "Prev" si currentBatch es 0
-          statusIndicator.textContent = "Listo"; // Actualiza el indicador de estado
+          batchIndicator.textContent = `${currentBatch + 1} de ${totalBatches}`; 
+          nextButton.disabled = currentBatch >= totalBatches - 1; 
+          prevButton.disabled = currentBatch === 0; 
+          statusIndicator.textContent = "Listo"; 
         })
         .catch(error => {
           console.error('Error:', error);
@@ -99,7 +148,7 @@
     }
 
     function fetchTotalBatches(n) {
-      statusIndicator.textContent = "Calculando..."; // Actualiza el indicador de estado
+      statusIndicator.textContent = "Calculando..."; 
       return fetch('/calc', {
         method: 'POST',
         headers: {
@@ -109,11 +158,11 @@
       })
       .then(response => response.json())
       .then(data => {
-        totalBatches = data.totalBatches; // Actualiza totalBatches
-        batchIndicator.textContent = `${currentBatch + 1} de ${totalBatches}`; // Actualiza el indicador de lote
-        nextButton.disabled = currentBatch >= totalBatches; // Deshabilita el botón "Next" si currentBatch es igual a totalBatches - 1
-        prevButton.disabled = currentBatch === 0; // Deshabilita el botón "Prev" si currentBatch es 0
-        statusIndicator.textContent = "Listo"; // Actualiza el indicador de estado
+        totalBatches = data.totalBatches;
+        batchIndicator.textContent = `${currentBatch + 1} de ${totalBatches}`; 
+        nextButton.disabled = currentBatch >= totalBatches; 
+        prevButton.disabled = currentBatch === 0; 
+        statusIndicator.textContent = "Listo"; 
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -123,11 +172,11 @@
     function updateChart(data) {
       const ctx = document.getElementById('chart').getContext('2d');
       if (chart) {
-          chart.destroy(); // Destruye el gráfico anterior si existe
+          chart.destroy(); 
       }
-      // No limites las cadenas binarias a los primeros 8 dígitos
+      
       const binaryStrings = data.binaryStrings;
-      // Resto del código...
+      
 
       chart = new Chart(ctx, {
           type: 'line',
@@ -136,8 +185,8 @@
               datasets: [{
                   label: 'Número de unos',
                   data: data.counts,
-                  backgroundColor: 'rgba(128, 0, 128, 0.2)', // Color de fondo morado
-                  borderColor: 'rgba(128, 0, 128, 1)', // Color de borde morado
+                  backgroundColor: 'rgba(128, 0, 128, 0.2)', 
+                  borderColor: 'rgba(128, 0, 128, 1)', 
                   borderWidth: 1
               }]
           },

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Buscador de palabras</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .badge {
+            margin: 2px;
+        }
+        #log {
+            background-color: #202020;
+            color: #fff;
+            font-family: monospace;
+            padding: 10px;
+            overflow: auto;
+            height: 200px; 
+            border-radius: 10px;
+        }
+
+        .alert {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+
+        .log-line {
+            margin-bottom: 10px; 
+        }
+        .read {
+            color: #3636b9; 
+        }
+        .transition {
+            color: #ce7216; 
+        }
+        .accepted {
+            color: #369c36; 
+        }
+        .state {
+            color: #c2ad35; 
+        }
+        .word {
+            color: #be341b; 
+        }
+
+        #results {
+            height: 200px; 
+            overflow: auto; 
+        }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="container py-4">
+    <h1 class="mb-4 text-secondary">Buscador de palabras</h1>
+    <form id="text-form" action="/process-text" method="post">
+        <div class="form-group">
+            <label for="text" class="text-secondary">Data entry:</label>
+            <textarea id="text" name="text" rows="4" class="form-control" placeholder="Ecribe un bonito texto o una url..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-secondary">Submit</button>
+    </form>
+    <div id="results" class="mt-4"></div>
+    <div id="log" class="mt-4"></div>
+    <div id="words-found" class="mt-4"></div>
+    <canvas id="histogram" class="mt-4"></canvas>
+    <div class="d-flex justify-content-center">
+        <a href="/" class="btn btn-secondary mt-2">Regresar al Inicio</a>
+    </div>
+    <script>
+        let myChart; // Variable para guardar la gráfica
+        const form = document.getElementById('text-form');
+
+        function processLogLines(logLines, index = 0) {
+            if (index >= logLines.length) {
+                return;
+            }
+        
+            const logElement = document.getElementById('log');
+            const logFragment = document.createDocumentFragment();
+        
+            let line = logLines[index];
+            if (line && line !== 'Read' && line !== 'Transition' && line !== 'Accepted') {
+                let coloredLine = line
+                    .replace(/'([^']*)'/g, '<span class="word">\'$1\'</span>')
+                    .replace(/q[0-9]+/g, '<span class="state">$&</span>');
+                let action = logLines[index - 1];
+                let coloredAction = `<span class="${action.toLowerCase()}">[${action}]</span>`;
+                const p = document.createElement('p');
+                p.className = 'log-line';
+                p.innerHTML = `${coloredAction}${coloredLine}`;
+                logFragment.appendChild(p);
+            }
+        
+            logElement.appendChild(logFragment);
+        
+            
+            setTimeout(() => processLogLines(logLines, index + 1), 0);
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const formParams = Array.from(formData.entries()).map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
+            fetch('/process-text', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formParams,
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+                const resultsElement = document.getElementById('results');
+                resultsElement.innerHTML = '';
+                const resultsFragment = document.createDocumentFragment();
+                data.positions.forEach(position => {
+                    const p = document.createElement('p');
+                    p.className = 'alert';
+                    p.textContent = `${position.word} found at position ${position.position}`;
+                    resultsFragment.appendChild(p);
+                });
+                resultsElement.appendChild(resultsFragment);
+            
+                
+                const logElement = document.getElementById('log');
+                logElement.innerHTML = '';
+                const logFragment = document.createDocumentFragment();
+                let logLines = data.log.split(/(Read|Transition|Accepted)/);
+                processLogLines(logLines);
+            
+                
+                const wordsFoundElement = document.getElementById('words-found');
+                wordsFoundElement.innerHTML = '';
+                const wordsFoundFragment = document.createDocumentFragment();
+                data.wordsFound.forEach(word => {
+                    const span = document.createElement('span');
+                    span.className = 'badge badge-secondary';
+                    span.textContent = word;
+                    wordsFoundFragment.appendChild(span);
+                });
+                wordsFoundElement.appendChild(wordsFoundFragment);
+            
+                
+                const ctx = document.getElementById('histogram').getContext('2d');
+                const labels = Object.keys(data.histogram);
+                const values = Object.values(data.histogram);
+                console.log(labels, values);
+                
+                if (myChart) {
+                    myChart.destroy();
+                }
+
+                
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Word Frequency',
+                            data: values,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error(error));
+        });
+    </script>
+</body>
+</html>
