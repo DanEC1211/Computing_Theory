@@ -217,13 +217,13 @@
             }
 
             for (let i = 0; i < game.length; i++) {
-                document.getElementById('estado').innerText = 'Estado: Turno del ' + currentPlayer;
-                cambiarEstiloEstado(currentPlayer);
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
                 let move = game[i];
+                document.getElementById('estado').innerText = 'Estado: Turno del ' + currentPlayer + ', se moverá a C' + move;
+                cambiarEstiloEstado(currentPlayer);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            
                 let cell = document.getElementById('c' + move);
-
+            
                 if (cell) {
                     if(currentPlayer === 'Player1') {
                         if(previousMoveP1 !== null) {

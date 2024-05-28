@@ -92,8 +92,7 @@ function generarArbol(numeroDeJugador, posicion, restricciones, MatrizAdyacencia
     return nivel + 1;
 } */
 
-function pathSelected(numeroDeJugador, numeroDeLote, tryhard = false) {
-
+function pathSelected(numeroDeJugador, numeroDeLote, tryhard = true) {
     const fileName = `jugador${numeroDeJugador}_lote_${numeroDeLote}.json`;
 
     if (!fs.existsSync(path.join(__dirname, '../gotrees', fileName))) {
@@ -107,12 +106,16 @@ function pathSelected(numeroDeJugador, numeroDeLote, tryhard = false) {
     const numeroBuscado = numeroDeJugador === 1 ? '16' : '13';
 
     function buscarRutas(objeto, ruta = []) {
-        for (let clave in objeto) {
+        let claves = Object.keys(objeto);
+        for (let i = claves.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [claves[i], claves[j]] = [claves[j], claves[i]];
+        }
+        for (let clave of claves) {
             if (objeto.hasOwnProperty(clave)) {
                 let nuevaRuta = ruta.concat(clave);
-                if (tryhard && nuevaRuta.includes(numeroBuscado)) {
+                if (tryhard && nuevaRuta.includes(numeroBuscado) && (!rutaSeleccionada || nuevaRuta.length > rutaSeleccionada.length)) {
                     rutaSeleccionada = nuevaRuta;
-                    return;
                 }
                 if (typeof objeto[clave] === 'object' && !Array.isArray(objeto[clave]) && objeto[clave] !== null) {
                     buscarRutas(objeto[clave], nuevaRuta);
@@ -126,9 +129,7 @@ function pathSelected(numeroDeJugador, numeroDeLote, tryhard = false) {
 
     buscarRutas(arbol[ultimaClavePrincipal]);
 
-
     const rutaConvertida = rutaSeleccionada.flatMap(ruta => ruta.split('-')).map(Number);
-
 
     const rutaSinDuplicados = rutaConvertida.reduce((acc, num, i, arr) => {
         if (num !== arr[i - 1]) {
