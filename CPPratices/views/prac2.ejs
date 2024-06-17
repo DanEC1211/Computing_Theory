@@ -220,7 +220,7 @@
                 let move = game[i];
                 document.getElementById('estado').innerText = 'Estado: Turno del ' + currentPlayer + ', se moverá a C' + move;
                 cambiarEstiloEstado(currentPlayer);
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 1250));
             
                 let cell = document.getElementById('c' + move);
             

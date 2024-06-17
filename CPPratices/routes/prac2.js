@@ -44,9 +44,10 @@ function generarArbol(numeroDeJugador, posicion, restricciones, MatrizAdyacencia
     let i = 0;
 
     function dfs(posActual, restricciones, arbol) {
-        if (restricciones.length === 0) {
+        if (!restricciones) {
             return;
         }
+
 
         const restriccion = restricciones.charAt(0);
         restricciones = restricciones.slice(1);

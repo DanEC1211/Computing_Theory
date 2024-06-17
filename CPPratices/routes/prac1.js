@@ -9,10 +9,7 @@ app.use(express.json());
 
 function* generateBinaryStrings(n) {
     for (let i = 0; i < Math.pow(2, n); i++) {
-        let binary = Number(i).toString(2);
-        while (binary.length < n) {
-            binary = "0" + binary;
-        }
+        let binary = i.toString(2).padStart(n, '0');
         yield binary;
     }
 }

@@ -56,52 +56,58 @@ async function fetchText(input) {
 
 function runDFA(text) {
     const positions = [];
-    const wordsFound = [];
     const transitions = dfa.transitions;
     let state = dfa.initialState;
     let log = "";
     let wordStart = -1;
     let currentWord = '';
+    let i = 0;
 
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i].toLowerCase();
-        log += `Read '${char}' in state '${state}'\n`;
+    for (const char of text) {
+        const lowerChar = char.toLowerCase();
+        log += `Read '${lowerChar}' in state '${state}'\n`;
 
         let nextState = null;
-        if (transitions[state] && transitions[state][char]) {
-            nextState = transitions[state][char];
+        if (transitions[state] && transitions[state][lowerChar]) {
+            nextState = transitions[state][lowerChar];
         } else if (state.includes('_')) {
             const states = state.split('_');
             for (const s of states) {
-                if (transitions[s] && transitions[s][char]) {
-                    nextState = transitions[s][char];
+                if (transitions[s] && transitions[s][lowerChar]) {
+                    nextState = transitions[s][lowerChar];
                     break;
                 }
             }
         }
-
+        
         if (nextState) {
             if (wordStart === -1) wordStart = i;
-            currentWord += char;
+            currentWord += lowerChar;
             state = nextState;
             log += `Transition to '${state}'\n`;
         } else {
             if (dfa.acceptingStates.includes(state)) {
-                positions.push({ word: currentWord, position: wordStart });
-                wordsFound.push(currentWord);
-                log += `Accepted word '${currentWord}' at position ${wordStart}\n`;
+                const existingPosition = positions.find(pos => pos.word === currentWord && pos.position === wordStart);
+                if (!existingPosition) {
+                    positions.push({ word: currentWord, position: wordStart });
+                    log += `Accepted word '${currentWord}' at position ${wordStart}\n`;
+                }
             }
             state = dfa.initialState;
             currentWord = '';
             wordStart = -1;
         }
+        i++;
     }
     if (dfa.acceptingStates.includes(state)) {
-        positions.push({ word: currentWord, position: wordStart });
-        wordsFound.push(currentWord);
-        log += `Accepted word '${currentWord}' at position ${wordStart}\n`;
+        const existingPosition = positions.find(pos => pos.word === currentWord && pos.position === wordStart);
+        if (!existingPosition) {
+            positions.push({ word: currentWord, position: wordStart });
+            log += `Accepted word '${currentWord}' at position ${wordStart}\n`;
+        }
     }
 
+    const wordsFound = positions.map(pos => pos.word);
     const histogram = wordsFound.reduce((hist, word) => {
         hist[word] = (hist[word] || 0) + 1;
         return hist;
@@ -109,7 +115,6 @@ function runDFA(text) {
 
     return { positions, wordsFound, log, histogram };
 }
-
 app.post('/process-text', async (req, res) => {
     try {
         const input = req.body.text;
