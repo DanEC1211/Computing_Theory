@@ -7,6 +7,8 @@ var indexRouter = require('./routes/index');
 var pract1Routes = require('./routes/prac1.js');
 var pract2Routes = require('./routes/prac2.js');
 const pract3Routes = require('./routes/prac3.js');
+const pract4Routes = require('./routes/prac4.js');
+
 
 var app = express();
 
@@ -22,9 +24,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 
-app.use('/', pract1Routes)
-app.use('/', pract2Routes)
-app.use('/', pract3Routes)
+app.use('/', pract1Routes);
+app.use('/', pract2Routes);
+app.use('/', pract3Routes);
+app.use('/', pract4Routes);
+
 
 
 // catch 404 and forward to error handler

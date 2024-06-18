@@ -66,7 +66,6 @@ app.get('/batch/:index', async (req, res) => {
 async function writeBatchToFile(batchIndex, data) {
     const dir = 'calcs';
     
-    // Crear el directorio si no existe
     if (!fs.existsSync(dir)){
         fs.mkdirSync(dir, { recursive: true });
     }

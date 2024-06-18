@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Solicitud de Ruta</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .form-control, .btn {
+            max-width: 300px;
+        }
+        .btn {
+            background-color: #6c757d;
+            color: #f0f0f0;
+        }
+        .btn:hover {
+            background-color: #5a6268;
+        }
+        .container {
+            padding-top: 50px;
+        }
+        a {
+            color: #333;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        a:hover {
+            color: #666;
+        }
+    </style>
+</head>
+<body class="container py-5">
+    <div class="d-flex justify-content-center"> 
+        <h1 class="mb-4 text-secondary">Solicitud de Ruta</h1>
+    </div>
+    <form id="form" action="/PDA" method="post" class="form-inline justify-content-center flex-column flex-md-row">
+        <div class="form-group mb-2">
+            <input type="text" class="form-control" id="cadenaInput" name="cadena" placeholder="Ingrese su cadena">
+        </div>
+        <input type="hidden" id="accion" name="accion" value="manual">
+        <button class="btn btn-secondary mb-2" onclick="document.getElementById('accion').value='manual';">Enviar Cadena</button>
+        <button type="submit" class="btn btn-secondary mb-2 ml-2" onclick="document.getElementById('accion').value='automatico';">Crear Cadena Automáticamente</button>
+    </form>
+    <div class="d-flex justify-content-center mt-4">
+        <a href="/" class="btn btn-secondary">Volver al menú</a>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('form');
+            form.addEventListener('submit', function(event) {
+                if (document.getElementById('accion').value === 'automatico') {
+                    generarCadenaAutomatica();
+                    form.submit();
+                }
+            });
+        });
+    
+        function generarCadenaAutomatica() {
+            let cadena = '';
+            const n = Math.floor(Math.random() * 20) + 1;
+            cadena = '0'.repeat(Math.floor(n/2)) + '1'.repeat(Math.floor(n/2));
+            document.getElementById('cadenaInput').value = cadena;
+        }
+    </script>
+</body>
+</html>
