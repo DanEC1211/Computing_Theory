@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generador de Pseudocódigo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .form-control, .btn {
+            max-width: 300px;
+        }
+        .btn {
+            background-color: #6c757d;
+            color: #f0f0f0;
+        }
+        .btn:hover {
+            background-color: #5a6268;
+        }
+        .container {
+            padding-top: 50px;
+        }
+        a {
+            color: #333;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        a:hover {
+            color: #666;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+        .keyword {
+            color: #054981; /* Azul para palabras clave */
+        }
+        /* Estilos adicionales para el bloque de pseudocódigo */
+        #pseudocodeBlock pre {
+            white-space: pre-wrap; /* Asegura que el texto se ajuste al contenedor */
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="container py-5">
+    <div class="d-flex justify-content-center"> 
+        <h1 class="mb-4 text-secondary">Generador de Pseudocódigo basado en BNF</h1>
+    </div>
+    <form id="generadorForm" action="/whatIf" method="post" class="form-inline justify-content-center flex-column flex-md-row">
+        <div class="form-group mb-2">
+            <label for="numIfs" class="sr-only">Número de 'ifs' a generar:</label>
+            <input type="number" class="form-control" id="numIfs" name="numIfs" min="1" placeholder="Número de 'ifs' a generar" required>
+        </div>
+        <button type="submit" class="btn btn-secondary mb-2">Generar</button>
+        <button type="button" class="btn btn-secondary mb-2" onclick="generarYEnviar()">Automático</button>  
+    </form>
+    <div class="d-flex justify-content-center mt-4">
+        <div id="derivationsConsole" style="width: 25%; margin-right: 10px; background-color: #012456; color: #ffffff; padding: 20px; border-radius: 5px; font-family: 'Courier New', Courier, monospace;">
+            <h2 style="color: #ffffff;">Derivaciones</h2>
+            <!-- Aquí se mostrarán las derivaciones con estética similar a PowerShell -->
+        </div>
+        <div id="pseudocodeBlock" style="width: 70%; background-color: #b6b6b6; color: #dcdcdc; padding: 20px; border-radius: 5px; font-family: 'Courier New', Courier, monospace;">
+            <h2 style="color: #303030;">Pseudocódigo</h2>
+            <!-- Aquí se mostrará el pseudocódigo con estética similar a Visual Studio Code en modo oscuro -->
+        </div>
+    </div>
+    <div class="d-flex justify-content-center mt-4">
+        <a href="/" class="btn btn-secondary">Volver al Menú</a>
+        <a href="/download/derivations" class="btn btn-secondary">Descargar Derivaciones</a>
+        <a href="/download/pseudocode" class="btn btn-secondary">Descargar Pseudocódigo</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('generadorForm').addEventListener('submit', function(e) {
+                e.preventDefault(); // Evita el envío tradicional del formulario
+                generarYEnviar(false); // Indica que no es automático
+            });
+        });
+    
+        async function generarYEnviar(esAutomatico) {
+            var numeroIfs;
+            if (esAutomatico) {
+                numeroIfs = Math.floor(Math.random() * 100) + 1; // Genera un número aleatorio si es automático
+                document.getElementById('numIfs').value = numeroIfs;
+            } else {
+                numeroIfs = document.getElementById('numIfs').value; // Usa el valor ingresado por el usuario si no es automático
+            }
+        
+            // Aquí realizamos la petición POST a /whatIf de manera asíncrona
+            try {
+                const response = await fetch('/whatIf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ numIfs: numeroIfs }),
+                });
+        
+                if (!response.ok) throw new Error('Respuesta de red no fue ok.');
+        
+                const data = await response.json();
+        
+                // Limpia los divs antes de imprimir la nueva información
+                document.getElementById('derivationsConsole').innerHTML = '<h2 style="color:#fffff f;">Derivaciones</h2>';
+                document.getElementById('pseudocodeBlock').innerHTML = '<h2 style="color:#303030;">Pseudocódigo</h2>';
+        
+                // Suponiendo que `data` contiene dos propiedades: derivations y pseudocode
+                imprimirInformacion(data.derivations, 'derivationsConsole', 0);
+                imprimirInformacion(data.pseudocode, 'pseudocodeBlock', 0);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        function imprimirInformacion(data, elementId, index) {
+            const elemento = document.getElementById(elementId);
+            if (index < data.length) {
+                let linea = data[index];
+                // Palabras clave que quieres resaltar
+                const palabrasClave = ['if', 'else', 'while', 'for', 'function'];
+                // Reemplaza las palabras clave en la línea por la misma palabra envuelta en un span con la clase 'keyword'
+                palabrasClave.forEach(palabra => {
+                    const regex = new RegExp(`\\b${palabra}\\b`, 'g');
+                    linea = linea.replace(regex, `<span class="keyword">${palabra}</span>`);
+                });
+                // Asegura que la indentación se preserve usando <pre> y <code>
+                if (elementId === 'pseudocodeBlock') {
+                    elemento.innerHTML += `<pre><code>${linea}</code></pre>`;
+                } else {
+                    elemento.innerHTML += linea + '<br>';
+                }
+                setTimeout(() => imprimirInformacion(data, elementId, index + 1), 500);
+            }
+        }
+    </script>
+</body>
+</html>

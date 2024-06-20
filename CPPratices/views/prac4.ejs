@@ -33,6 +33,27 @@
         a:hover {
             color: #666;
         }
+        .console {
+            background-color: #333;
+            color: #f0f0f0;
+            padding: 10px;
+            overflow: auto;
+            max-height: 400px;
+            border-radius: 5px;
+        }
+        #stackContainer {
+            border-radius: 5px;
+            background-color: #c4c1c1;
+            padding: 10px;
+        }
+
+        #stackContainer div {
+            background-color: #333;
+            margin: 5px;
+            border-radius: 5px;
+            min-height: 25px;
+        }
+
     </style>
 </head>
 <body class="container py-5">
@@ -45,28 +66,91 @@
         </div>
         <input type="hidden" id="accion" name="accion" value="manual">
         <button class="btn btn-secondary mb-2" onclick="document.getElementById('accion').value='manual';">Enviar Cadena</button>
-        <button type="submit" class="btn btn-secondary mb-2 ml-2" onclick="document.getElementById('accion').value='automatico';">Crear Cadena Automáticamente</button>
+        <button type="button" class="btn btn-secondary mb-2 ml-2" onclick="generarCadenaAutomatica();">Crear Cadena Automáticamente</button>
     </form>
+    <div id="notificacion" class="alert d-flex justify-content-center mt-4" style="display: none;"></div>
+    <pre id="console" class="console"></pre>
+    <div id="stackContainer" style=" min-height: 50px;">
+        <!-- Este div actuará como el contenedor de la pila -->
+    </div>
     <div class="d-flex justify-content-center mt-4">
+        <a href="/downloadPDA" class="btn btn-secondary">Descargar Snapshots</a>
         <a href="/" class="btn btn-secondary">Volver al menú</a>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('form');
             form.addEventListener('submit', function(event) {
-                if (document.getElementById('accion').value === 'automatico') {
-                    generarCadenaAutomatica();
-                    form.submit();
-                }
+                event.preventDefault();
+                enviarDatos();
             });
         });
     
         function generarCadenaAutomatica() {
             let cadena = '';
-            const n = Math.floor(Math.random() * 20) + 1;
+            const n = Math.floor(Math.random() * 10000) + 1;
             cadena = '0'.repeat(Math.floor(n/2)) + '1'.repeat(Math.floor(n/2));
             document.getElementById('cadenaInput').value = cadena;
+            document.getElementById('accion').value = 'automatico';
+            enviarDatos(); // Llama a enviarDatos después de generar la cadena automáticamente
         }
+    
+        function enviarDatos() {
+        const formData = new FormData(document.getElementById('form'));
+        const object = {};
+        formData.forEach((value, key) => {object[key] = value});
+        const json = JSON.stringify(object);
+        console.log(json);
+        fetch('/PDA', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: json
+        }).then(response => response.json())
+        .then(data => {
+            const notificacion = document.getElementById('notificacion');
+            notificacion.innerText = data.message;
+            notificacion.style.display = 'block'; // Asegurarse de que la notificación sea visible
+            notificacion.classList.remove('alert-primary', 'alert-warning'); // Remover clases previas
+            if (data.message === "Cadena aceptada.") {
+                notificacion.classList.add('alert-primary'); // Clase para notificación azul
+            } else {
+                notificacion.classList.add('alert-warning'); // Clase para notificación amarilla
+            }
+            
+            const consoleElement = document.getElementById('console');
+            consoleElement.innerText = ''; 
+            if (data.snapshots) {
+                const snapshotsDescriptions = data.snapshots.map((snapshot, index) => {
+                    const state = snapshot.state;
+                    const input = snapshot.input;
+                    const stack = snapshot.stack.filter(element => element !== "Z").join(', ');
+                    return `(${state}, ${input}, [${stack}])`;
+                }).join('\n');
+                consoleElement.innerText = snapshotsDescriptions; 
+            }
+            if (data.snapshots) {
+                animarSnapshots(data.snapshots);
+            }    
+        }).catch(error => console.error('Error:', error));
+
+        function animarSnapshots(snapshots) {
+            const stackContainer = document.getElementById('stackContainer');
+            stackContainer.innerHTML = ''; // Limpiar el contenedor antes de la animación
+            snapshots.forEach((snapshot, index) => {
+                setTimeout(() => {
+                    stackContainer.innerHTML = ''; // Limpiar el contenedor para la nueva instantánea de la pila
+                    // Filtrar "Z" antes de mostrar los elementos de la pila
+                    snapshot.stack.filter(element => element !== "Z").forEach(element => {
+                        const div = document.createElement('div');
+                        div.style.margin = '2px';
+                        stackContainer.appendChild(div); // Añadir el elemento de la pila al contenedor
+                    });
+                }, index * 1000); // Espera 1 segundo antes de mostrar el siguiente estado
+            });
+        }
+    }
     </script>
 </body>
 </html>

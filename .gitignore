@@ -2,6 +2,8 @@
 /CPPratices/node_modules/
 /CPPratices/calcs/*.txt
 /CPPratices/gotrees/*.json
+/CPPratices/ifgen/*.txt
+/CPPratices/snapshots/*.txt
 # Ignorar los archivos de registro
 *.log
 

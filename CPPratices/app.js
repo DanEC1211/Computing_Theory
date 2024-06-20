@@ -8,6 +8,8 @@ var pract1Routes = require('./routes/prac1.js');
 var pract2Routes = require('./routes/prac2.js');
 const pract3Routes = require('./routes/prac3.js');
 const pract4Routes = require('./routes/prac4.js');
+const pract5Routes = require('./routes/prac5.js');
+const pract6Routes = require('./routes/prac6.js');
 
 
 var app = express();
@@ -28,6 +30,8 @@ app.use('/', pract1Routes);
 app.use('/', pract2Routes);
 app.use('/', pract3Routes);
 app.use('/', pract4Routes);
+app.use('/', pract5Routes);
+app.use('/', pract6Routes);
 
 
 
